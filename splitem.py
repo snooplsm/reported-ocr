@@ -3,7 +3,7 @@ import csv
 import shutil
 import random
 
-def split_and_copy_images(csv_file, output_folder, split_ratio=0.7):
+def split_and_copy_images(csv_file, output_folder, split_ratio=0.79):
     train_folder = os.path.join(output_folder, "train")
     val_folder = os.path.join(output_folder, "val")
 
