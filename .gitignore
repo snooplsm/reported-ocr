@@ -27,7 +27,6 @@ build/
 out/
 .temp/
 .cache/
-
 # Editor/IDE Config
 .idea/
 .vscode/
@@ -64,4 +63,6 @@ coverage/
 
 # Optional npm cache directory
 .npm
+
 media.csv
+reported/
