@@ -28,30 +28,21 @@ def find_duplicates(folder):
 
     return duplicates
 
-def delete_duplicates(duplicates):
-    """Interactively delete one of the duplicate files."""
-    for idx, (file1, file2) in enumerate(duplicates, start=1):
-        print(f"\nDuplicate Set {idx}:")
-        print(f"1: {file1}")
-        print(f"2: {file2}")
-        choice = input("Choose a file to delete (1/2) or skip (s): ").strip().lower()
-
-        if choice == "1":
-            try:
-                os.remove(file1)
-                print(f"Deleted: {file1}")
-            except Exception as e:
-                print(f"Error deleting {file1}: {e}")
-        elif choice == "2":
-            try:
-                os.remove(file2)
-                print(f"Deleted: {file2}")
-            except Exception as e:
-                print(f"Error deleting {file2}: {e}")
-        elif choice == "s":
-            print("Skipped this set.")
+def delete_longer_filename(duplicates):
+    """Delete the file with the longer filename for each duplicate pair."""
+    for file1, file2 in duplicates:
+        # Compare filename lengths
+        if len(file1) > len(file2):
+            to_delete, to_keep = file1, file2
         else:
-            print("Invalid input. Skipping this set.")
+            to_delete, to_keep = file2, file1
+
+        # Attempt to delete the longer file
+        try:
+            os.remove(to_delete)
+            print(f"Deleted: {to_delete} (kept: {to_keep})")
+        except Exception as e:
+            print(f"Error deleting {to_delete}: {e}")
 
 # Main script
 if __name__ == "__main__":
@@ -66,4 +57,4 @@ if __name__ == "__main__":
             print("No duplicate files found.")
         else:
             print(f"Found {len(duplicates)} sets of duplicates.")
-            delete_duplicates(duplicates)
+            delete_longer_filename(duplicates)

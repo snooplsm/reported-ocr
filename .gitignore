@@ -66,4 +66,5 @@ coverage/
 
 media.csv
 reported/
-images.csv
+*.csv
+*.zip
