@@ -1,5 +1,6 @@
 import os
 import hashlib
+import re
 
 def calculate_sha256(file_path):
     """Calculate the SHA-256 hash of a file."""
@@ -25,14 +26,36 @@ def rename_files_to_uppercase(folder):
                 except Exception as e:
                     print(f"Error renaming {file_path}: {e}")
 
-def find_duplicates(folder):
-    """Find duplicate files in a folder based on SHA-256 hash."""
+def validate_special_naming(file_name):
+    """
+    Check if the file's basename starts with 't' or 'T' (or 'y'/'Y'),
+    ends with 'c' or 'C', and contains exactly 6 digits in between.
+    Only validate if it starts and ends with the specified letters;
+    otherwise, it is considered valid.
+    """
+    # Only validate if the file starts with t/T or y/Y and ends with c/C
+    if file_name[0].lower() in ['t', 'y'] and file_name[-1].lower() == 'c':
+        # Match if there are exactly 6 digits between
+        pattern = r"^[tTyY]\d{6}[cC]$"
+        return re.match(pattern, file_name) is not None
+    return True
+
+def find_duplicates_and_validate(folder):
+    """Find duplicate files and validate special naming rules."""
     file_hashes = {}  # Map of SHA-256 hash to file paths
     duplicates = []   # List of duplicate file pairs
+    invalid_files = []  # List of files that fail the naming validation
 
     for root, _, files in os.walk(folder):
         for file in files:
             file_path = os.path.join(root, file)
+            name, ext = os.path.splitext(file)
+
+            # Validate the naming convention
+            if not validate_special_naming(name):
+                invalid_files.append(file_path)
+
+            # Check for duplicates
             try:
                 file_hash = calculate_sha256(file_path)
                 if file_hash in file_hashes:
@@ -42,7 +65,7 @@ def find_duplicates(folder):
             except Exception as e:
                 print(f"Error processing file {file_path}: {e}")
 
-    return duplicates
+    return duplicates, invalid_files
 
 def delete_longer_filename(duplicates):
     """Delete the file with the longer filename for each duplicate pair."""
@@ -72,12 +95,21 @@ if __name__ == "__main__":
         print("Renaming files to uppercase (excluding extensions)...")
         rename_files_to_uppercase(folder)
 
-        # Step 2: Find duplicates
-        print("Scanning for duplicate files...")
-        duplicates = find_duplicates(folder)
+        # Step 2: Find duplicates and validate special naming rules
+        print("Scanning for duplicate files and validating naming rules...")
+        duplicates, invalid_files = find_duplicates_and_validate(folder)
 
+        # Report duplicates
         if not duplicates:
             print("No duplicate files found.")
         else:
             print(f"Found {len(duplicates)} sets of duplicates.")
             delete_longer_filename(duplicates)
+
+        # Report invalid files
+        if invalid_files:
+            print(f"\nThe following files do not meet the naming criteria:")
+            for invalid in invalid_files:
+                print(f"- {invalid}")
+        else:
+            print("All files meet the naming criteria.")
