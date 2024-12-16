@@ -9,6 +9,22 @@ def calculate_sha256(file_path):
             sha256.update(chunk)
     return sha256.hexdigest()
 
+def rename_files_to_uppercase(folder):
+    """Rename all files in a folder to have uppercase names, excluding the extension."""
+    for root, _, files in os.walk(folder):
+        for file in files:
+            file_path = os.path.join(root, file)
+            name, ext = os.path.splitext(file)
+            new_name = f"{name.upper()}{ext}"  # Convert the name to uppercase, retain the extension
+            new_path = os.path.join(root, new_name)
+
+            if file_path != new_path:  # Check if the name needs to be changed
+                try:
+                    os.rename(file_path, new_path)
+                    print(f"Renamed: {file_path} -> {new_path}")
+                except Exception as e:
+                    print(f"Error renaming {file_path}: {e}")
+
 def find_duplicates(folder):
     """Find duplicate files in a folder based on SHA-256 hash."""
     file_hashes = {}  # Map of SHA-256 hash to file paths
@@ -46,11 +62,18 @@ def delete_longer_filename(duplicates):
 
 # Main script
 if __name__ == "__main__":
-    folder = input("Enter the folder to scan for duplicates: ").strip()
+    folder = input("Enter the folder to process: ").strip()
     if not os.path.isdir(folder):
         print("Error: Invalid folder path.")
     else:
-        print(f"Scanning folder: {folder}...")
+        print(f"Processing folder: {folder}...")
+
+        # Step 1: Rename files to uppercase
+        print("Renaming files to uppercase (excluding extensions)...")
+        rename_files_to_uppercase(folder)
+
+        # Step 2: Find duplicates
+        print("Scanning for duplicate files...")
         duplicates = find_duplicates(folder)
 
         if not duplicates:
